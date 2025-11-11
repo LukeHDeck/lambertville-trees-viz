@@ -16,7 +16,7 @@
     "sourceLayer": "lambertville-trees-v1"
   },
   "models": {
-    "basePath": "https://raw.githubusercontent.com/[USERNAME]/lambertville-trees-models/main/models",
+    "basePath": "https://raw.githubusercontent.com/[USERNAME]/lambertville-trees-viz/main/models",
     "categories": {
       "extraLarge": [1, 2, 3, 4],
       "large": [1, 2, 3, 4],

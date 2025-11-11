@@ -31,8 +31,10 @@ This application displays an interactive 3D map where trees are rendered as 3D m
 ### Running Locally
 
 1. Clone the repository
-2. Open `src/index.html` in your web browser
-3. The map should load centered on Lambertville, NJ at 3D angle
+2. Add your GLB model files to the `models/` directory (see Model Structure below)
+3. Update `modelBasePath` in `src/index.html` to use relative path: `'../models'` for local testing
+4. Open `src/index.html` in your web browser
+5. The map should load centered on Lambertville, NJ at 3D angle
 
 ### Configuration
 
@@ -53,7 +55,7 @@ const CONFIG = {
 
 ## Model Structure
 
-The `modelBasePath` should point to a directory with the following structure:
+This repository includes a `models/` directory where you should place your GLB files. The directory structure is already created with the following layout:
 ```
 models/
 ├── extra-large/
@@ -104,13 +106,23 @@ The tileset must contain a `type` field on each feature with one of these values
 
 ## Model File Hosting
 
-GLB files can be hosted on:
-- GitHub (via raw.githubusercontent.com)
-- AWS S3
-- Mapbox Model Library
-- Your own web server
+By default, this project stores GLB model files in the `models/` directory within this repository. When deployed to GitHub, the files are accessed via `raw.githubusercontent.com`.
 
-Ensure CORS is enabled for cross-origin requests.
+**For local development:**
+- Place GLB files in the `models/` directory
+- Set `modelBasePath: '../models'` in `src/index.html`
+
+**For production (GitHub Pages, etc):**
+- GLB files are hosted via GitHub's raw content URL
+- The default configuration uses: `https://raw.githubusercontent.com/YOUR_USERNAME/lambertville-trees-viz/main/models`
+
+**Alternative hosting options:**
+If you prefer to host models separately, you can also use:
+- AWS S3 (with CORS enabled)
+- Mapbox Model Library
+- Your own web server (with CORS enabled)
+
+Note: Ensure CORS is enabled for cross-origin requests when hosting externally.
 
 ## Troubleshooting
 
