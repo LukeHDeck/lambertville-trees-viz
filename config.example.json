@@ -1,0 +1,27 @@
+{
+  "mapbox": {
+    "accessToken": "pk.eyJ1IjoiZGVja2RvZyIsImEiOiJjbDl5YWJydXcwMnl6M3Jrbml2djd5ZTJtIn0.hFpqesRFKogZg_ku3KKS_A",
+    "style": "mapbox://styles/deckdog/cmhpg30ke001u01rx9dda1l8i"
+  },
+  "map": {
+    "center": [-74.9443887, 40.3657128],
+    "zoom": 18.46,
+    "pitch": 60,
+    "bearing": 21.6,
+    "minZoom": 15,
+    "maxZoom": 22
+  },
+  "tileset": {
+    "url": "mapbox://deckdog.cmhv0bthj2k0b1nn4ae4eh32y-05o4c",
+    "sourceLayer": "lambertville-trees-v1"
+  },
+  "models": {
+    "basePath": "https://raw.githubusercontent.com/[USERNAME]/lambertville-trees-models/main/models",
+    "categories": {
+      "extraLarge": [1, 2, 3, 4],
+      "large": [1, 2, 3, 4],
+      "medium": [1, 2, 3, 4],
+      "small": [1, 2, 3, 4]
+    }
+  }
+}
