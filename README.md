@@ -48,6 +48,8 @@ The command runs a small static server that serves `src/index.html` at the root 
 
 Serving from the repository root ensures the browser can reach both `src/index.html` and the top-level `models/` directory referenced by `modelBasePath`.
 
+> **Tip:** The map now loads each GLB once and caches the model for subsequent style reloads. If you need to invalidate the cache during development, refresh the page with DevTools open and check the **Network** tab to confirm the models are requested again.
+
 ### Configuration
 
 Edit the `CONFIG` object in `src/index.html` to customize:
@@ -141,13 +143,14 @@ Note: Ensure CORS is enabled for cross-origin requests when hosting externally.
 **Models not loading:**
 - Check that `modelBasePath` is correct and accessible
 - Verify CORS is enabled on hosting server
-- Check browser console for error messages
+- Check browser console for error messages such as `Failed to load model ...` (these indicate the GLB path or access token is wrong)
+- Ensure your Mapbox token includes **Models: Read** in addition to Styles/Tilesets scopes so GLB assets may be fetched
 
 **Map not displaying:**
 - Verify Mapbox access token is valid
 - Check that tileset URL is correct
 - Ensure you're zoomed into Lambertville area (15-22 zoom range)
-- If the console logs `featureNamespace ... is not associated to the same source`, make sure the token includes the **Featuresets: Read** scope. The Deckdog style (`mapbox://styles/deckdog/cmhpg30ke001u01rx9dda1l8i`) references a Mapbox featureset for place labels.
+- If the console logs `featureNamespace ... is not associated to the same source`, make sure the token includes both the **Featuresets: Read** scope (needed by the Deckdog style) and the **Tilesets: Read** scope for the Lambertville dataset.
 
 **Performance issues:**
 - Reduce zoom level to lower detail LOD
