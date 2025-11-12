@@ -48,8 +48,6 @@ The command runs a small static server that serves `src/index.html` at the root 
 
 Serving from the repository root ensures the browser can reach both `src/index.html` and the top-level `models/` directory referenced by `modelBasePath`.
 
-> **Tip:** The map now loads each GLB once and caches the model for subsequent style reloads. If you need to invalidate the cache during development, refresh the page with DevTools open and check the **Network** tab to confirm the models are requested again.
-
 ### Configuration
 
 Edit the `CONFIG` object in `src/index.html` to customize:

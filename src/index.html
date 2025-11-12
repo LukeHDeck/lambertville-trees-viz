@@ -112,61 +112,6 @@
             antialias: true
         });
 
-        const MODEL_VARIANTS = {
-            'extra-large': 4,
-            'large': 4,
-            'medium': 4,
-            'small': 4
-        };
-
-        const modelCache = new Map();
-
-        const loadModel = (mapInstance, id, url) => {
-            if (modelCache.has(id)) {
-                try {
-                    mapInstance.addModel(id, modelCache.get(id));
-                    return Promise.resolve();
-                } catch (error) {
-                    if (error && typeof error.message === 'string' && error.message.includes('already exists')) {
-                        return Promise.resolve();
-                    }
-                    return Promise.reject(error);
-                }
-            }
-
-            return new Promise((resolve, reject) => {
-                mapInstance.loadModel(url, (error, model) => {
-                    if (error) {
-                        reject(new Error(`Failed to load model ${id} from ${url}: ${error.message || error}`));
-                        return;
-                    }
-
-                    modelCache.set(id, model);
-
-                    try {
-                        mapInstance.addModel(id, model);
-                        resolve();
-                    } catch (addError) {
-                        reject(addError);
-                    }
-                });
-            });
-        };
-
-        const registerTreeModels = async (mapInstance) => {
-            const registrations = [];
-
-            for (const [size, count] of Object.entries(MODEL_VARIANTS)) {
-                for (let variant = 1; variant <= count; variant += 1) {
-                    const modelId = `${size}-tree-${variant}`;
-                    const modelUrl = `${CONFIG.modelBasePath}/${size}/${size}-tree-${variant}.glb`;
-                    registrations.push(loadModel(mapInstance, modelId, modelUrl));
-                }
-            }
-
-            await Promise.all(registrations);
-        };
-
         const variantIndexExpression = [
             '%',
             ['abs', ['coalesce', ['number', ['id']], 0]],
@@ -183,34 +128,34 @@
             ];
         };
 
+        const buildVariantPaths = (size) => {
+            return [
+                `${CONFIG.modelBasePath}/${size}/${size}-tree-1.glb`,
+                `${CONFIG.modelBasePath}/${size}/${size}-tree-2.glb`,
+                `${CONFIG.modelBasePath}/${size}/${size}-tree-3.glb`,
+                `${CONFIG.modelBasePath}/${size}/${size}-tree-4.glb`
+            ];
+        };
+
         const createModelExpressionBySize = () => {
             return [
                 'case',
-                ['==', ['get', 'type'], 'extra-large'], createVariantExpression([
-                    'extra-large-tree-1',
-                    'extra-large-tree-2',
-                    'extra-large-tree-3',
-                    'extra-large-tree-4'
-                ]),
-                ['==', ['get', 'type'], 'large'], createVariantExpression([
-                    'large-tree-1',
-                    'large-tree-2',
-                    'large-tree-3',
-                    'large-tree-4'
-                ]),
-                ['==', ['get', 'type'], 'medium'], createVariantExpression([
-                    'medium-tree-1',
-                    'medium-tree-2',
-                    'medium-tree-3',
-                    'medium-tree-4'
-                ]),
-                createVariantExpression([
-                    'small-tree-1',
-                    'small-tree-2',
-                    'small-tree-3',
-                    'small-tree-4'
-                ])
+                ['==', ['get', 'type'], 'extra-large'], createVariantExpression(buildVariantPaths('extra-large')),
+                ['==', ['get', 'type'], 'large'], createVariantExpression(buildVariantPaths('large')),
+                ['==', ['get', 'type'], 'medium'], createVariantExpression(buildVariantPaths('medium')),
+                createVariantExpression(buildVariantPaths('small'))
             ];
+
+            return createVariantExpression(palette);
+        };
+
+        const createRotationExpression = () => {
+            return createVariantExpression([
+                ['literal', [0, 0, 0]],
+                ['literal', [0, 0, 90]],
+                ['literal', [0, 0, 180]],
+                ['literal', [0, 0, 270]]
+            ]);
         };
 
         const createColorExpression = () => {
@@ -235,48 +180,42 @@
 
         // Handle map style loading
         map.on('style.load', () => {
-            registerTreeModels(map)
-                .then(() => {
-                    if (!map.getSource('lambertvilleTrees')) {
-                        map.addSource('lambertvilleTrees', {
-                            'type': 'vector',
-                            'url': CONFIG.tilesetUrl
-                        });
-                    }
-
-                    if (!map.getLayer('tree-layer')) {
-                        map.addLayer({
-                            'id': 'tree-layer',
-                            'type': 'model',
-                            'slot': 'middle',
-                            'source': 'lambertvilleTrees',
-                            'source-layer': CONFIG.sourceLayerName,
-                            'layout': {
-                                'model-id': createModelExpressionBySize()
-                            },
-                            'paint': {
-                                'model-color': createColorExpression(),
-                                'model-color-mix-intensity': 0.21,
-                                'model-rotation': createRotationExpression(),
-                                'model-scale': [
-                                    'match',
-                                    ['get', 'type'],
-                                    'extra-large', ['literal', [1.3, 1.3, 1.3]],
-                                    'large', ['literal', [1.0, 1.0, 1.0]],
-                                    'medium', ['literal', [0.75, 0.75, 0.75]],
-                                    'small', ['literal', [0.5, 0.5, 0.5]],
-                                    ['literal', [1, 1, 1]]
-                                ],
-                                'model-cast-shadows': true
-                            },
-                            'minzoom': 15,
-                            'maxzoom': 22
-                        });
-                    }
-                })
-                .catch((error) => {
-                    console.error(error);
+            if (!map.getSource('lambertvilleTrees')) {
+                map.addSource('lambertvilleTrees', {
+                    'type': 'vector',
+                    'url': CONFIG.tilesetUrl
                 });
+            }
+
+            if (!map.getLayer('tree-layer')) {
+                map.addLayer({
+                    'id': 'tree-layer',
+                    'type': 'model',
+                    'slot': 'middle',
+                    'source': 'lambertvilleTrees',
+                    'source-layer': CONFIG.sourceLayerName,
+                    'layout': {
+                        'model-id': createModelExpressionBySize()
+                    },
+                    'paint': {
+                        'model-color': createColorExpression(),
+                        'model-color-mix-intensity': 0.21,
+                        'model-rotation': createRotationExpression(),
+                        'model-scale': [
+                            'match',
+                            ['get', 'type'],
+                            'extra-large', ['literal', [1.3, 1.3, 1.3]],
+                            'large', ['literal', [1.0, 1.0, 1.0]],
+                            'medium', ['literal', [0.75, 0.75, 0.75]],
+                            'small', ['literal', [0.5, 0.5, 0.5]],
+                            ['literal', [1, 1, 1]]
+                        ],
+                        'model-cast-shadows': true
+                    },
+                    'minzoom': 15,
+                    'maxzoom': 22
+                });
+            }
         });
 
         // Performance optimization
