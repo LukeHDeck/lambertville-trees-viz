@@ -145,6 +145,17 @@
                 ['==', ['get', 'type'], 'medium'], createVariantExpression(buildVariantPaths('medium')),
                 createVariantExpression(buildVariantPaths('small'))
             ];
+
+            return createVariantExpression(palette);
+        };
+
+        const createRotationExpression = () => {
+            return createVariantExpression([
+                ['literal', [0, 0, 0]],
+                ['literal', [0, 0, 90]],
+                ['literal', [0, 0, 180]],
+                ['literal', [0, 0, 270]]
+            ]);
         };
 
         const createColorExpression = () => {
