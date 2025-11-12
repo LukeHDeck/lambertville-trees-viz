@@ -30,11 +30,23 @@ This application displays an interactive 3D map where trees are rendered as 3D m
 
 ### Running Locally
 
-1. Clone the repository
-2. Add your GLB model files to the `models/` directory (see Model Structure below)
-3. Update `modelBasePath` in `src/index.html` to use relative path: `'../models'` for local testing
-4. Open `src/index.html` in your web browser
-5. The map should load centered on Lambertville, NJ at 3D angle
+The tree models are loaded with `fetch`, so the page must be served over HTTP or the browser will block the requests. Choose one of the following options:
+
+**Using Node.js (supports `npm run dev`):**
+
+1. Install [Node.js](https://nodejs.org/) if you do not already have it.
+2. From the repository root, run `npm run dev`.
+3. Open [http://localhost:8000/index.html](http://localhost:8000/index.html) in your browser.
+
+The command runs a small static server that serves the `src/` directory and sets permissive CORS headers so the GLB models load correctly.
+
+**Using Python 3 (preinstalled on macOS):**
+
+1. Change into the `src/` directory: `cd src`
+2. Run `python3 -m http.server 8000`
+3. Visit [http://localhost:8000/index.html](http://localhost:8000/index.html)
+
+In either case, make sure `modelBasePath` inside `src/index.html` points to `../models` while working locally.
 
 ### Configuration
 
