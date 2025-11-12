@@ -112,95 +112,99 @@
             antialias: true
         });
 
-        // Helper function to create tree model selection expression based on size type
+        const variantIndexExpression = [
+            '%',
+            ['abs', ['coalesce', ['number', ['id']], 0]],
+            4
+        ];
+
+        const createVariantExpression = (values) => {
+            return [
+                'case',
+                ['==', variantIndexExpression, 0], values[0],
+                ['==', variantIndexExpression, 1], values[1],
+                ['==', variantIndexExpression, 2], values[2],
+                values[3]
+            ];
+        };
+
+        const buildVariantPaths = (size) => {
+            return [
+                `${CONFIG.modelBasePath}/${size}/${size}-tree-1.glb`,
+                `${CONFIG.modelBasePath}/${size}/${size}-tree-2.glb`,
+                `${CONFIG.modelBasePath}/${size}/${size}-tree-3.glb`,
+                `${CONFIG.modelBasePath}/${size}/${size}-tree-4.glb`
+            ];
+        };
+
         const createModelExpressionBySize = () => {
             return [
-                "case",
-                // Extra-large trees
-                ["==", ["get", "type"], "extra-large"],
-                [
-                    "case",
-                    ["==", ["%", ["number", ["id"]], 4], 0], `${CONFIG.modelBasePath}/extra-large/extra-large-tree-1.glb`,
-                    ["==", ["%", ["number", ["id"]], 4], 1], `${CONFIG.modelBasePath}/extra-large/extra-large-tree-2.glb`,
-                    ["==", ["%", ["number", ["id"]], 4], 2], `${CONFIG.modelBasePath}/extra-large/extra-large-tree-3.glb`,
-                    `${CONFIG.modelBasePath}/extra-large/extra-large-tree-4.glb`
-                ],
-                // Large trees
-                ["==", ["get", "type"], "large"],
-                [
-                    "case",
-                    ["==", ["%", ["number", ["id"]], 4], 0], `${CONFIG.modelBasePath}/large/large-tree-1.glb`,
-                    ["==", ["%", ["number", ["id"]], 4], 1], `${CONFIG.modelBasePath}/large/large-tree-2.glb`,
-                    ["==", ["%", ["number", ["id"]], 4], 2], `${CONFIG.modelBasePath}/large/large-tree-3.glb`,
-                    `${CONFIG.modelBasePath}/large/large-tree-4.glb`
-                ],
-                // Medium trees
-                ["==", ["get", "type"], "medium"],
-                [
-                    "case",
-                    ["==", ["%", ["number", ["id"]], 4], 0], `${CONFIG.modelBasePath}/medium/medium-tree-1.glb`,
-                    ["==", ["%", ["number", ["id"]], 4], 1], `${CONFIG.modelBasePath}/medium/medium-tree-2.glb`,
-                    ["==", ["%", ["number", ["id"]], 4], 2], `${CONFIG.modelBasePath}/medium/medium-tree-3.glb`,
-                    `${CONFIG.modelBasePath}/medium/medium-tree-4.glb`
-                ],
-                // Small trees (default)
-                [
-                    "case",
-                    ["==", ["%", ["number", ["id"]], 4], 0], `${CONFIG.modelBasePath}/small/small-tree-1.glb`,
-                    ["==", ["%", ["number", ["id"]], 4], 1], `${CONFIG.modelBasePath}/small/small-tree-2.glb`,
-                    ["==", ["%", ["number", ["id"]], 4], 2], `${CONFIG.modelBasePath}/small/small-tree-3.glb`,
-                    `${CONFIG.modelBasePath}/small/small-tree-4.glb`
-                ]
+                'case',
+                ['==', ['get', 'type'], 'extra-large'], createVariantExpression(buildVariantPaths('extra-large')),
+                ['==', ['get', 'type'], 'large'], createVariantExpression(buildVariantPaths('large')),
+                ['==', ['get', 'type'], 'medium'], createVariantExpression(buildVariantPaths('medium')),
+                createVariantExpression(buildVariantPaths('small'))
             ];
+        };
+
+        const createColorExpression = () => {
+            const palette = [
+                ['rgba', 73, 107, 64, 1],
+                ['rgba', 78, 116, 70, 1],
+                ['rgba', 82, 123, 74, 1],
+                ['rgba', 68, 100, 60, 1]
+            ];
+
+            return createVariantExpression(palette);
+        };
+
+        const createRotationExpression = () => {
+            return createVariantExpression([
+                ['literal', [0, 0, 0]],
+                ['literal', [0, 0, 90]],
+                ['literal', [0, 0, 180]],
+                ['literal', [0, 0, 270]]
+            ]);
         };
 
         // Handle map style loading
         map.on('style.load', () => {
-            // Add the trees tileset source
-            map.addSource('lambertvilleTrees', {
-                'type': 'vector',
-                'url': CONFIG.tilesetUrl
-            });
+            if (!map.getSource('lambertvilleTrees')) {
+                map.addSource('lambertvilleTrees', {
+                    'type': 'vector',
+                    'url': CONFIG.tilesetUrl
+                });
+            }
 
-            // Add the tree layer with size-based models
-            map.addLayer({
-                'id': 'tree-layer',
-                'type': 'model',
-                'slot': 'middle',
-                'source': 'lambertvilleTrees',
-                'source-layer': CONFIG.sourceLayerName,
-                'layout': {
-                    'model-id': createModelExpressionBySize()
-                },
-                'paint': {
-                    // Random color variation for visual interest
-                    "model-color": [
-                        "hsla",
-                        ["random", 50, 200, ["id"]],
-                        60,
-                        ["random", 70, 90, ["id"]],
-                        1
-                    ],
-                    "model-color-mix-intensity": 0.21,
-                    // Random rotation for natural appearance
-                    "model-rotation": [
-                        0, 0, ["random", 0, 360, ["id"]]
-                    ],
-                    // Scale based on tree size type
-                    "model-scale": [
-                        "match",
-                        ["get", "type"],
-                        "extra-large", ["literal", [1.3, 1.3, 1.3]],
-                        "large", ["literal", [1.0, 1.0, 1.0]],
-                        "medium", ["literal", [0.75, 0.75, 0.75]],
-                        "small", ["literal", [0.5, 0.5, 0.5]],
-                        ["literal", [1, 1, 1]]
-                    ],
-                    "model-cast-shadows": true
-                },
-                "minzoom": 15,
-                "maxzoom": 22
-            });
+            if (!map.getLayer('tree-layer')) {
+                map.addLayer({
+                    'id': 'tree-layer',
+                    'type': 'model',
+                    'slot': 'middle',
+                    'source': 'lambertvilleTrees',
+                    'source-layer': CONFIG.sourceLayerName,
+                    'layout': {
+                        'model-id': createModelExpressionBySize()
+                    },
+                    'paint': {
+                        'model-color': createColorExpression(),
+                        'model-color-mix-intensity': 0.21,
+                        'model-rotation': createRotationExpression(),
+                        'model-scale': [
+                            'match',
+                            ['get', 'type'],
+                            'extra-large', ['literal', [1.3, 1.3, 1.3]],
+                            'large', ['literal', [1.0, 1.0, 1.0]],
+                            'medium', ['literal', [0.75, 0.75, 0.75]],
+                            'small', ['literal', [0.5, 0.5, 0.5]],
+                            ['literal', [1, 1, 1]]
+                        ],
+                        'model-cast-shadows': true
+                    },
+                    'minzoom': 15,
+                    'maxzoom': 22
+                });
+            }
         });
 
         // Performance optimization
