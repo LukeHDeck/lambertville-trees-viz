@@ -10,9 +10,18 @@ const rootDir = path.resolve(process.cwd(), args[0] || 'src');
 const port = Number(process.env.PORT || args[1] || 8000);
 
 if (!fs.existsSync(rootDir) || !fs.statSync(rootDir).isDirectory()) {
-  console.error(`Cannot start server: \"${rootDir}\" is not a directory.`);
+  console.error(`Cannot start server: "${rootDir}" is not a directory.`);
   process.exit(1);
 }
+
+const mounts = [{ prefix: '/', dir: rootDir }];
+const modelsDir = path.resolve(rootDir, '../models');
+
+if (fs.existsSync(modelsDir) && fs.statSync(modelsDir).isDirectory()) {
+  mounts.push({ prefix: '/models', dir: modelsDir });
+}
+
+const orderedMounts = mounts.sort((a, b) => b.prefix.length - a.prefix.length);
 
 const mimeTypes = {
   '.html': 'text/html; charset=utf-8',
@@ -38,9 +47,27 @@ const server = http.createServer((req, res) => {
     pathname += 'index.html';
   }
 
-  const filePath = path.join(rootDir, pathname);
+  let selectedMount = orderedMounts.find(({ prefix }) => {
+    if (prefix === '/') {
+      return true;
+    }
 
-  if (!filePath.startsWith(rootDir)) {
+    if (pathname === prefix) {
+      return true;
+    }
+
+    return pathname.startsWith(prefix.endsWith('/') ? prefix : `${prefix}/`);
+  });
+
+  if (!selectedMount) {
+    selectedMount = orderedMounts[orderedMounts.length - 1];
+  }
+
+  const relativePath = pathname.slice(selectedMount.prefix.length);
+  const safeRelativePath = relativePath.startsWith('/') ? relativePath.slice(1) : relativePath;
+  const filePath = path.join(selectedMount.dir, safeRelativePath);
+
+  if (!filePath.startsWith(selectedMount.dir)) {
     res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
     res.end('Forbidden');
     return;

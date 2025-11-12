@@ -38,15 +38,15 @@ The tree models are loaded with `fetch`, so the page must be served over HTTP or
 2. From the repository root, run `npm run dev`.
 3. Open [http://localhost:8000/index.html](http://localhost:8000/index.html) in your browser.
 
-The command runs a small static server that serves the `src/` directory and sets permissive CORS headers so the GLB models load correctly.
+The command runs a small static server that serves `src/index.html` at the root URL and transparently exposes the sibling `models/` directory so the GLB assets load without 404s.
 
 **Using Python 3 (preinstalled on macOS):**
 
-1. Change into the `src/` directory: `cd src`
+1. Change into the repository root: `cd lambertville-trees-viz`
 2. Run `python3 -m http.server 8000`
-3. Visit [http://localhost:8000/index.html](http://localhost:8000/index.html)
+3. Visit [http://localhost:8000/src/index.html](http://localhost:8000/src/index.html)
 
-In either case, make sure `modelBasePath` inside `src/index.html` points to `../models` while working locally.
+Serving from the repository root ensures the browser can reach both `src/index.html` and the top-level `models/` directory referenced by `modelBasePath`.
 
 ### Configuration
 
@@ -147,6 +147,7 @@ Note: Ensure CORS is enabled for cross-origin requests when hosting externally.
 - Verify Mapbox access token is valid
 - Check that tileset URL is correct
 - Ensure you're zoomed into Lambertville area (15-22 zoom range)
+- If the console logs `featureNamespace ... is not associated to the same source`, make sure the token includes the **Featuresets: Read** scope. The Deckdog style (`mapbox://styles/deckdog/cmhpg30ke001u01rx9dda1l8i`) references a Mapbox featureset for place labels.
 
 **Performance issues:**
 - Reduce zoom level to lower detail LOD
