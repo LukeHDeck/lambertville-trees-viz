@@ -30,11 +30,23 @@ This application displays an interactive 3D map where trees are rendered as 3D m
 
 ### Running Locally
 
-1. Clone the repository
-2. Add your GLB model files to the `models/` directory (see Model Structure below)
-3. Update `modelBasePath` in `src/index.html` to use relative path: `'../models'` for local testing
-4. Open `src/index.html` in your web browser
-5. The map should load centered on Lambertville, NJ at 3D angle
+The tree models are loaded with `fetch`, so the page must be served over HTTP or the browser will block the requests. Choose one of the following options:
+
+**Using Node.js (supports `npm run dev`):**
+
+1. Install [Node.js](https://nodejs.org/) if you do not already have it.
+2. From the repository root, run `npm run dev`.
+3. Open [http://localhost:8000/index.html](http://localhost:8000/index.html) in your browser.
+
+The command runs a small static server that serves `src/index.html` at the root URL and transparently exposes the sibling `models/` directory so the GLB assets load without 404s.
+
+**Using Python 3 (preinstalled on macOS):**
+
+1. Change into the repository root: `cd lambertville-trees-viz`
+2. Run `python3 -m http.server 8000`
+3. Visit [http://localhost:8000/src/index.html](http://localhost:8000/src/index.html)
+
+Serving from the repository root ensures the browser can reach both `src/index.html` and the top-level `models/` directory referenced by `modelBasePath`.
 
 ### Configuration
 
@@ -135,6 +147,7 @@ Note: Ensure CORS is enabled for cross-origin requests when hosting externally.
 - Verify Mapbox access token is valid
 - Check that tileset URL is correct
 - Ensure you're zoomed into Lambertville area (15-22 zoom range)
+- If the console logs `featureNamespace ... is not associated to the same source`, make sure the token includes the **Featuresets: Read** scope. The Deckdog style (`mapbox://styles/deckdog/cmhpg30ke001u01rx9dda1l8i`) references a Mapbox featureset for place labels.
 
 **Performance issues:**
 - Reduce zoom level to lower detail LOD
